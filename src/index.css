@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css");
+
+:root {
+  font-size: 62.5%;
+}
+
+body {
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  height: 100%;
+}
+
+img {
+  max-width: 100%;
+  vertical-align: bottom;
+}
+
+/* 스크롤바 다크 테마 커스터마이징 */
+.dark-scrollbar::-webkit-scrollbar {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.dark-scrollbar::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 0.4rem;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* 기본 스크롤바 숨김 (필요시) */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
