@@ -17,6 +17,8 @@ interface KanbanColumnProps {
   tasks: Task[];
   onTaskEdit: (task: Task) => void;
   onTaskDelete: (id: string) => void;
+  searchQuery: string;
+  matchedTaskIds: Set<string> | null;
 }
 
 const columnStyles = {
@@ -74,7 +76,10 @@ export default function KanbanColumn({
   tasks,
   onTaskEdit,
   onTaskDelete,
+  searchQuery,
+  matchedTaskIds,
 }: KanbanColumnProps) {
+  const isSearchActive = searchQuery.length > 0;
   const styles = columnStyles[status];
 
   return (
@@ -145,19 +150,26 @@ export default function KanbanColumn({
                     </p>
                   </div>
                 ) : (
-                  tasks.map((task, index) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      index={index}
-                      title={task.title}
-                      description={task.description}
-                      priority={task.priority}
-                      createdAt={formatDate(task.createdAt)}
-                      onEdit={() => onTaskEdit(task)}
-                      onDelete={() => onTaskDelete(task.id)}
-                    />
-                  ))
+                  tasks.map((task, index) => {
+                    const isMatched =
+                      !isSearchActive ||
+                      (matchedTaskIds ? matchedTaskIds.has(task.id) : true);
+                    return (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        index={index}
+                        title={task.title}
+                        description={task.description}
+                        priority={task.priority}
+                        createdAt={formatDate(task.createdAt)}
+                        onEdit={() => onTaskEdit(task)}
+                        onDelete={() => onTaskDelete(task.id)}
+                        isSearchActive={isSearchActive}
+                        isMatched={isMatched}
+                      />
+                    );
+                  })
                 )}
 
                 {provided.placeholder}

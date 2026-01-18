@@ -1,5 +1,5 @@
 // src/components/kanban/KanbanBoard.tsx
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DragDropContext } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import KanbanColumn from "./KanbanColumn";
@@ -29,6 +29,24 @@ export default function KanbanBoard({
 }: KanbanBoardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  // ✅ 검색어
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const isSearchActive = normalizedQuery.length > 0;
+
+  // ✅ 제목 기반 매칭 Task id 모음
+  const matchedTaskIds = useMemo(() => {
+    if (!isSearchActive) return null; // 검색 안 할 땐 null로
+    const ids = new Set<string>();
+    for (const task of tasks) {
+      if (task.title.toLowerCase().includes(normalizedQuery)) {
+        ids.add(task.id);
+      }
+    }
+    return ids;
+  }, [tasks, isSearchActive, normalizedQuery]);
 
   // 상태별로 태스크 필터링
   const todoTasks = tasks.filter((task) => task.status === "todo");
@@ -99,29 +117,52 @@ export default function KanbanBoard({
               태스크를 관리하고 프로젝트 진행 상황을 추적하세요
             </p>
           </div>
+          <div className="flex items-center gap-[1.2rem]">
+            {/* ✅ 검색 input */}
+            <div className="relative">
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="태스크 제목 검색..."
+                className="w-[32rem] px-[1.6rem] py-[1.2rem] rounded-[0.8rem] border border-grey-30
+                           text-[1.6rem] bg-white shadow-sm
+                           focus:outline-none focus:ring-2 focus:ring-grey-30"
+              />
+              {isSearchActive && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-[1rem] top-1/2 -translate-y-1/2 text-grey-60 hover:text-grey-90"
+                  aria-label="검색어 지우기"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
 
-          <button
-            onClick={handleAddClick}
-            className="flex items-center gap-[0.8rem] px-[2.6rem] py-[1.2rem] 
+            <button
+              onClick={handleAddClick}
+              className="flex items-center gap-[0.8rem] px-[2.6rem] py-[1.2rem] 
                      bg-orange-500 text-white rounded-[0.8rem] text-[1.6rem] font-semibold 
                      hover:bg-orange-600 transition-colors shadow-md hover:shadow-lg"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-[2rem] w-[2rem]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            새 태스크
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-[2rem] w-[2rem]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              새 태스크
+            </button>
+          </div>
         </div>
 
         {/* 통계 */}
@@ -162,6 +203,8 @@ export default function KanbanBoard({
             tasks={todoTasks}
             onTaskEdit={handleEditTask}
             onTaskDelete={handleDeleteTask}
+            searchQuery={normalizedQuery}
+            matchedTaskIds={matchedTaskIds}
           />
           <KanbanColumn
             title="진행 중"
@@ -169,6 +212,8 @@ export default function KanbanBoard({
             tasks={inProgressTasks}
             onTaskEdit={handleEditTask}
             onTaskDelete={handleDeleteTask}
+            searchQuery={normalizedQuery}
+            matchedTaskIds={matchedTaskIds}
           />
           <KanbanColumn
             title="완료"
@@ -176,6 +221,8 @@ export default function KanbanBoard({
             tasks={doneTasks}
             onTaskEdit={handleEditTask}
             onTaskDelete={handleDeleteTask}
+            searchQuery={normalizedQuery}
+            matchedTaskIds={matchedTaskIds}
           />
         </div>
       </DragDropContext>
