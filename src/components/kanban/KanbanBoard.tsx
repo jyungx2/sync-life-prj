@@ -1,5 +1,7 @@
 // src/components/kanban/KanbanBoard.tsx
 import { useState } from "react";
+import { DragDropContext } from "@hello-pangea/dnd";
+import type { DropResult } from "@hello-pangea/dnd";
 import KanbanColumn from "./KanbanColumn";
 import TaskModal from "@/components/task/TaskModal";
 
@@ -66,6 +68,22 @@ export default function KanbanBoard({
       // 추가
       onAddTask(data);
     }
+  };
+
+  // 드래그 앤 드롭 핸들러
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result;
+
+    // 드롭 영역이 없으면 무시
+    if (!destination) return;
+
+    // 같은 컬럼이면 무시
+    if (source.droppableId === destination.droppableId) return;
+
+    // 태스크 상태 업데이트
+    onUpdateTask(draggableId, {
+      status: destination.droppableId as "todo" | "in-progress" | "done",
+    });
   };
 
   return (
@@ -135,30 +153,32 @@ export default function KanbanBoard({
         </div>
       </div>
 
-      {/* 칸반 컬럼들 */}
-      <div className="flex gap-[2.4rem] overflow-x-auto pb-[2rem] flex-1">
-        <KanbanColumn
-          title="할 일"
-          status="todo"
-          tasks={todoTasks}
-          onTaskEdit={handleEditTask}
-          onTaskDelete={handleDeleteTask}
-        />
-        <KanbanColumn
-          title="진행 중"
-          status="in-progress"
-          tasks={inProgressTasks}
-          onTaskEdit={handleEditTask}
-          onTaskDelete={handleDeleteTask}
-        />
-        <KanbanColumn
-          title="완료"
-          status="done"
-          tasks={doneTasks}
-          onTaskEdit={handleEditTask}
-          onTaskDelete={handleDeleteTask}
-        />
-      </div>
+      {/* DragDropContext로 전체 칸반 보드 감싸기 */}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="flex gap-[2.4rem] overflow-x-auto pb-[2rem] flex-1">
+          <KanbanColumn
+            title="할 일"
+            status="todo"
+            tasks={todoTasks}
+            onTaskEdit={handleEditTask}
+            onTaskDelete={handleDeleteTask}
+          />
+          <KanbanColumn
+            title="진행 중"
+            status="in-progress"
+            tasks={inProgressTasks}
+            onTaskEdit={handleEditTask}
+            onTaskDelete={handleDeleteTask}
+          />
+          <KanbanColumn
+            title="완료"
+            status="done"
+            tasks={doneTasks}
+            onTaskEdit={handleEditTask}
+            onTaskDelete={handleDeleteTask}
+          />
+        </div>
+      </DragDropContext>
 
       {/* 모달 */}
       <TaskModal
